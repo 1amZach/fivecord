@@ -1,0 +1,21 @@
+Bundled license information:
+
+undici/lib/web/fetch/body.js:
+  /*! formdata-polyfill. MIT License. Jimmy Wärting <https://jimmy.warting.se/opensource> */
+
+undici/lib/web/websocket/frame.js:
+  /*! ws. MIT License. Einar Otto Stangvik <einaros@gmail.com> */
+
+@vladfrangu/async_event_emitter/dist/index.cjs:
+  /*! Bundled license information:
+  
+  node-inspect-extracted/dist/inspect.js:
+    (*! For license information please see inspect.js.LICENSE.txt *)
+  */
+
+@sapphire/shapeshift/dist/cjs/index.cjs:
+  /**
+   * @license MIT
+   * @copyright 2020 Colin McDonnell
+   * @see https://github.com/colinhacks/zod/blob/master/LICENSE
+   */
