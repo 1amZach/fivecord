@@ -203,6 +203,8 @@ The code is TypeScript in `src`, bundled with esbuild into one file.
 
 Made by **IamZach**. Questions, bugs or ideas: [discord.gg/agn](https://discord.gg/agn)
 
+Setup questions can also go in [Discussions](https://github.com/1amZach/fivecord/discussions), so the answers stay searchable for the next person.
+
 ## License
 
 MIT
