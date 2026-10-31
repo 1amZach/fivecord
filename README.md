@@ -160,7 +160,7 @@ fivecord:getAvatar(source)
 fivecord:getTier(source)                 -- 'admin', or nil for non-staff
 fivecord:isStaff(source)
 
-fivecord:log('bans', 'Title', 'Description', 0xE5484D)  -- to a log channel
+fivecord:log('bans', 'Title', 'Description', 0xE5484D)  -- to a log channel, optionally with an image data URI last
 fivecord:send('channel id', 'plain message')
 fivecord:announce('Title', 'Shown to everyone in game')
 
@@ -197,7 +197,10 @@ The code is TypeScript in `src`, bundled with esbuild into one file.
 
 ## Addons
 
-- [joinqueue](https://github.com/1amZach/joinqueue): a connection queue for full servers, with Discord role priority and crash grace. fivecord works the same with or without it.
+- [joinqueue](https://github.com/1amZach/joinqueue): a connection queue for full servers, with Discord role priority and crash grace.
+- [warden](https://github.com/1amZach/warden): an anticheat. When it's running, its bans go through fivecord and show up in `/bans` and `/lookup`, its detections go to the `anticheat` log channel with a screenshot, and `/teleport` won't set it off.
+
+fivecord works the same with or without them.
 
 ## Support
 

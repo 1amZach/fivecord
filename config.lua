@@ -46,6 +46,7 @@ Config.logs = {
     deaths = '',
     chat = '',          -- in-game chat, batched every few seconds
     resources = '',     -- resources starting and stopping
+    anticheat = '',     -- detections, kicks and bans from warden
 }
 
 -- Ping this role on reports and urgent logs, like a ban dodge. '' for nobody.

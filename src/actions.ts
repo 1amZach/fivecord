@@ -123,6 +123,8 @@ export async function kill(by: User, t: OnlineTarget) {
 }
 
 export async function teleport(by: User, t: OnlineTarget, x: number, y: number, z: number, where: string) {
+    // Tell the anticheat this one is on purpose.
+    if (GetResourceState('warden') === 'started') cfx().warden.allow(t.src, 'teleport', 10);
     emitNet('fivecord:teleport', t.src, x, y, z);
     audit(by, 'Teleported', describe(t), `to ${where}`);
     return ok(`Teleported ${describe(t)} to ${where}.`);

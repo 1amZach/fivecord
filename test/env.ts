@@ -73,8 +73,13 @@ g.emit = (event: string, ...args: any[]) => {
 
 g.emitNet = (event: string, target: unknown, ...args: unknown[]) => net.push({ event, target, args });
 
+export const wardenAllowed: unknown[][] = [];
 g.exports = new Proxy((name: string, fn: (...args: any[]) => unknown) => exported.set(name, fn), {
-    get: (_t, resource: string) => (resource === 'oxmysql' ? undefined : {}),
+    get: (_t, resource: string) => {
+        if (resource === 'oxmysql') return undefined;
+        if (resource === 'warden') return { allow: (...args: unknown[]) => wardenAllowed.push(args) };
+        return {};
+    },
 });
 
 g.GetCurrentResourceName = () => 'fivecord';

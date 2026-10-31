@@ -2,6 +2,7 @@
 // The Discord ones use the same names as discordbridge, so scripts written for
 // it keep working.
 
+import { AttachmentBuilder } from 'discord.js';
 import * as bans from './bans';
 import { banMessage } from './connect';
 import { db } from './db';
@@ -36,10 +37,15 @@ const api: Record<string, (...args: any[]) => unknown> = {
     },
     isStaff: (src) => tierOfDiscord(discordId(src)) >= 0,
 
-    log(kind: string, title: string, description?: string, color?: number) {
+    // `image` is an optional data URI, like the one screenshot-basic gives back.
+    log(kind: string, title: string, description?: string, color?: number, image?: string) {
         const e = embed(color ?? colors.brand).setTitle(String(title).slice(0, 256));
         if (description) e.setDescription(String(description).slice(0, 4000));
-        void log(kind, e);
+
+        const data = typeof image === 'string' ? image.split(',')[1] : undefined;
+        if (!data) return void log(kind, e);
+        e.setImage('attachment://screenshot.jpg');
+        void log(kind, e, { files: [new AttachmentBuilder(Buffer.from(data, 'base64'), { name: 'screenshot.jpg' })] });
     },
 
     async send(channel: string, content: string) {

@@ -1,4 +1,4 @@
-import { addPlayer, dropped, exported, net, players, registered, tick } from './env';
+import { addPlayer, dropped, exported, net, players, registered, states, tick, wardenAllowed } from './env';
 import assert from 'node:assert/strict';
 import { before, describe, test } from 'node:test';
 
@@ -203,6 +203,12 @@ describe('moderation', () => {
         assert.match(await run('teleport', { player: '@8', to: '@9' }), /Hal/);
         assert.deepEqual(net.at(-1)!.args, [109, 200, 30]);
         assert.match(await run('teleport', { player: '@8', coords: '1, nope' }), /look like/);
+        assert.equal(wardenAllowed.length, 0, 'warden not running');
+
+        states.warden = 'started';
+        await run('teleport', { player: '@8', location: 'Legion Square' });
+        assert.deepEqual(wardenAllowed.at(-1), [8, 'teleport', 10]);
+        delete states.warden;
     });
 
     test('money and items go through the framework bridge', async () => {
@@ -247,6 +253,11 @@ describe('exports', () => {
         sessions.start(12);
         assert.equal(exported.get('getDiscordId')!(12), '100000000000000012');
         assert.equal(exported.get('isStaff')!(12), false);
+    });
+
+    test('log takes a screenshot from an anticheat', () => {
+        assert.doesNotThrow(() => exported.get('log')!('anticheat', 'Kicked', 'Noclip', 0xff0000, 'data:image/jpeg;base64,/9j/4AAQ'));
+        assert.doesNotThrow(() => exported.get('log')!('anticheat', 'Kicked', 'Noclip', 0xff0000, 'not a data uri'));
     });
 
     test('anticheats can ban through the export', async () => {
