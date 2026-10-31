@@ -1,4 +1,8 @@
-import { addPlayer, dropped, exported, net, players, registered, states, tick, wardenAllowed } from './env';
+import { addPlayer, dropped, exported, fakeCapture, net, players, registered, states, tick, wardenAllowed } from './env';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import * as act from '../src/actions';
 import assert from 'node:assert/strict';
 import { before, describe, test } from 'node:test';
 
@@ -258,6 +262,39 @@ describe('exports', () => {
     test('log takes a screenshot from an anticheat', () => {
         assert.doesNotThrow(() => exported.get('log')!('anticheat', 'Kicked', 'Noclip', 0xff0000, 'data:image/jpeg;base64,/9j/4AAQ'));
         assert.doesNotThrow(() => exported.get('log')!('anticheat', 'Kicked', 'Noclip', 0xff0000, 'not a data uri'));
+    });
+
+    test('screenshots and clips come from fivecapture when it runs', async () => {
+        addPlayer(14, 'Rae');
+        sessions.start(14);
+        const by = { id: '1', username: 'Zach', displayAvatarURL: () => 'https://cdn.discordapp.com/embed/avatars/0.png' } as any;
+        const t = { src: 14, name: 'Rae' } as any;
+        assert.match((await act.record(by, t, 10)).text, /need `fivecapture`/);
+
+        states.fivecapture = 'started';
+        fakeCapture.result = { data: 'data:image/jpeg;base64,/9j/4AAQ' };
+        const shot = await act.screenshot(by, t);
+        assert.ok(shot.ok && shot.files?.length === 1, shot.text);
+        assert.deepEqual(fakeCapture.calls.at(-1)!.slice(0, 2), ['screenshot', 14]);
+
+        const dir = mkdtempSync(join(tmpdir(), 'fivecord-clip-'));
+        writeFileSync(join(dir, 'c.webm'), 'webm');
+        fakeCapture.result = { file: join(dir, 'c.webm'), size: 4 };
+        const clip = await act.record(by, t, 12);
+        assert.ok(clip.ok && clip.files?.length === 1, 'clip attached');
+        assert.deepEqual(fakeCapture.calls.at(-1)!.slice(0, 3), ['record', 14, 12]);
+
+        fakeCapture.result = { file: '/x/huge.webm', size: 50 * 1024 * 1024 };
+        assert.match((await act.record(by, t, 30)).text, /Too big for Discord, saved on the server/);
+
+        fakeCapture.error = 'player left';
+        assert.match((await act.record(by, t, 5)).text, /failed: player left/);
+        fakeCapture.error = false;
+
+        // log only attaches videos from fivecapture's own folder
+        assert.doesNotThrow(() => exported.get('log')!('anticheat', 'Banned', 'x', 0, undefined, '/etc/passwd'));
+        assert.doesNotThrow(() => exported.get('log')!('anticheat', 'Banned', 'x', 0, undefined, '/srv/resources/fivecapture/captures/../../../etc/x.webm'));
+        delete states.fivecapture;
     });
 
     test('anticheats can ban through the export', async () => {

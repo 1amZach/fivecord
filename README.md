@@ -11,7 +11,7 @@ Works with Qbox, QBCore and ESX, or with no framework at all.
 - **Reports.** `/report` in game opens a thread in Discord with Claim, Look up and Close buttons. Whatever staff write in the thread shows up in the player's chat.
 - **Staff chat** between Discord and staff in game.
 - **Warnings and notes** that stay on a player's record.
-- **Moderation:** message, warn, kick, freeze, revive, heal, kill, teleport, screenshot, kick everyone.
+- **Moderation:** message, warn, kick, freeze, revive, heal, kill, teleport, screenshot, video clip, kick everyone.
 - **Economy:** set job, set gang, give or take money, give items, with autocomplete for every job, grade and item.
 - **Server control:** lock the server for maintenance, restart with countdown warnings in game, daily restarts, weather and time, announcements, start/stop/restart resources, and a console that shows you what the command printed.
 - **Discord roles become in-game permissions** (aces) and update the moment a role changes, no reconnect.
@@ -27,7 +27,7 @@ Works with Qbox, QBCore and ESX, or with no framework at all.
 - A recent FXServer build (fivecord runs on Node 22, which FXServer provides).
 - [ox_lib](https://github.com/overextended/ox_lib)
 - Optional: [oxmysql](https://github.com/overextended/oxmysql). Without it, data is kept in `data.json` inside the resource.
-- Optional: [screenshot-basic](https://github.com/citizenfx/screenshot-basic) for `/screenshot`.
+- Optional: [fivecapture](https://github.com/1amZach/fivecapture) for `/screenshot` and `/record`, or screenshot-basic for `/screenshot` only.
 
 ## Install
 
@@ -49,7 +49,7 @@ Works with Qbox, QBCore and ESX, or with no framework at all.
    ensure fivecord
    ```
 
-   Start fivecord after your framework, oxmysql and screenshot-basic.
+   Start fivecord after your framework, oxmysql and fivecapture or screenshot-basic.
 5. Open `config.lua`, set `Config.guild` to your Discord server id and fill in the role ids for each staff level. Everything else is optional.
 
 Discord members with the Administrator permission are treated as the top staff level, so you can use the bot straight away while you set roles up.
@@ -99,6 +99,7 @@ Config.permissions = {
 | `/kick` | Kick a player from the server | mod |
 | `/freeze` | Freeze or unfreeze a player | mod |
 | `/screenshot` | See a player's screen right now | mod |
+| `/record` | A short video of a player's screen, 3 to 30 seconds. Needs fivecapture | mod |
 | `/ban` | Ban a player, online or offline | mod |
 | `/unban` | Lift a ban | mod |
 | `/bans` | Browse bans | support |
@@ -211,7 +212,7 @@ The code is TypeScript in `src`, bundled with esbuild into one file.
 
 - [joinqueue](https://github.com/1amZach/joinqueue): a connection queue for full servers, with Discord role priority and crash grace.
 - [warden](https://github.com/1amZach/warden): an anticheat. When it's running, its bans go through fivecord and show up in `/bans` and `/lookup`, its detections go to the `anticheat` log channel with a screenshot, and `/teleport` won't set it off.
-
+- [fivecapture](https://github.com/1amZach/fivecapture): screenshots and video clips. Adds `/record` and a Record button on `/lookup`, and warden's clips are attached to its anticheat logs so they play in Discord.
 - [fiveadmin](https://github.com/1amZach/fiveadmin): an in-game admin menu. Staff get the same levels as on Discord, and its warnings, kicks and bans go through fivecord.
 - [fiveload](https://github.com/1amZach/fiveload): a loading screen. It shows how many staff are online and the latest post from `Config.channels.news`.
 - [fivepanel](https://github.com/1amZach/fivepanel): a web admin panel. It uses fivecord's staff levels, and everything staff do in it goes through fivecord and shows up in your logs.

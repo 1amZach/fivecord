@@ -105,7 +105,7 @@ export const freeze: Command = {
 export const screenshot: Command = {
     category: 'Moderation',
     tier: 'mod',
-    summary: "See a player's screen right now (needs screenshot-basic)",
+    summary: "See a player's screen right now (needs fivecapture or screenshot-basic)",
     data: new SlashCommandBuilder()
         .setName('screenshot')
         .setDescription("Take a screenshot of a player's screen")
@@ -116,6 +116,25 @@ export const screenshot: Command = {
         if (!t) return;
         await i.deferReply({ flags: MessageFlags.Ephemeral });
         await send(i, await act.screenshot(i.user, t));
+    },
+    autocomplete: onlineOnly,
+};
+
+export const record: Command = {
+    category: 'Moderation',
+    tier: 'mod',
+    summary: "Record a short clip of a player's screen (needs fivecapture)",
+    data: new SlashCommandBuilder()
+        .setName('record')
+        .setDescription("Record a short video of a player's screen")
+        .addStringOption(playerOption())
+        .addIntegerOption((o) => o.setName('seconds').setDescription('How long, 10 if empty').setMinValue(3).setMaxValue(30)),
+    async run(i) {
+        if (!i.isChatInputCommand()) return;
+        const t = await needOnline(i, i.options.getString('player', true));
+        if (!t) return;
+        await i.deferReply({ flags: MessageFlags.Ephemeral });
+        await send(i, await act.record(i.user, t, i.options.getInteger('seconds') ?? 10));
     },
     autocomplete: onlineOnly,
 };
@@ -403,6 +422,10 @@ handlers.push({
         if (action === 'screenshot') {
             await i.deferReply({ flags: MessageFlags.Ephemeral });
             return send(i, await act.screenshot(i.user, t));
+        }
+        if (action === 'record') {
+            await i.deferReply({ flags: MessageFlags.Ephemeral });
+            return send(i, await act.record(i.user, t, 10));
         }
     },
 });

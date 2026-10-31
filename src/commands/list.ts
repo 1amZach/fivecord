@@ -1,6 +1,6 @@
 import { giveitem, money, setgang, setjob } from './economy';
 import { help } from './help';
-import { ban, bansCommand, freeze, kick, message, note, screenshot, unban, warn, warnings } from './moderation';
+import { ban, bansCommand, freeze, kick, message, note, record, screenshot, unban, warn, warnings } from './moderation';
 import { lookup, lookupUser, players } from './players';
 import { consoleCommand, resource } from './resources';
 import { announce, server, top } from './server';
@@ -26,6 +26,7 @@ export const all: Command[] = [
     kick,
     freeze,
     screenshot,
+    record,
     ban,
     unban,
     bansCommand,

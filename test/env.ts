@@ -74,15 +74,25 @@ g.emit = (event: string, ...args: any[]) => {
 g.emitNet = (event: string, target: unknown, ...args: unknown[]) => net.push({ event, target, args });
 
 export const wardenAllowed: unknown[][] = [];
+// fivecapture: answers with `fakeCapture.result`, or fails with `fakeCapture.error`
+export const fakeCapture: { calls: unknown[][]; result: any; error: string | false } = { calls: [], result: null, error: false };
 g.exports = new Proxy((name: string, fn: (...args: any[]) => unknown) => exported.set(name, fn), {
     get: (_t, resource: string) => {
         if (resource === 'oxmysql') return undefined;
         if (resource === 'warden') return { allow: (...args: unknown[]) => wardenAllowed.push(args) };
+        if (resource === 'fivecapture') {
+            const answer = (name: string) => (...args: any[]) => {
+                fakeCapture.calls.push([name, ...args.slice(0, -1)]);
+                setImmediate(() => args.at(-1)(fakeCapture.error, fakeCapture.result));
+            };
+            return { screenshot: answer('screenshot'), record: answer('record') };
+        }
         return {};
     },
 });
 
 g.GetCurrentResourceName = () => 'fivecord';
+g.GetResourcePath = (name: string) => `/srv/resources/${name}`;
 g.GetInvokingResource = () => 'anticheat';
 g.GetConvar = (name: string, fallback: string) => ({ version: 'FXServer-master SERVER v1.0.0.12913 linux', onesync: 'on' })[name] ?? fallback;
 g.GetConvarInt = (_name: string, fallback: number) => (_name === 'sv_maxclients' ? 64 : fallback);

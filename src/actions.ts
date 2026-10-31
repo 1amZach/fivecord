@@ -1,6 +1,7 @@
 // What staff can do to a player. Slash commands and buttons both end up here,
 // so every action is checked, logged and worded the same way.
 
+import { readFileSync } from 'node:fs';
 import { AttachmentBuilder, type User } from 'discord.js';
 import * as bans from './bans';
 import * as bridge from './bridge';
@@ -130,21 +131,50 @@ export async function teleport(by: User, t: OnlineTarget, x: number, y: number, 
     return ok(`Teleported ${describe(t)} to ${where}.`);
 }
 
-export function screenshot(by: User, t: OnlineTarget): Promise<Result> {
-    if (GetResourceState('screenshot-basic') !== 'started') {
-        return Promise.resolve(no('Screenshots need the `screenshot-basic` resource.'));
-    }
+const capturing = () => GetResourceState('fivecapture') === 'started';
 
-    return new Promise((resolve) => {
-        const timer = setTimeout(() => resolve(no(`${t.name} didn't send a screenshot back in time.`)), 20_000);
-
-        cfx()['screenshot-basic'].requestClientScreenshot(t.src, { encoding: 'jpg', quality: 0.85 }, (err: unknown, data: string) => {
+// A data URI of the player's screen, from fivecapture or screenshot-basic.
+function grab(src: number): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error("didn't send a screenshot back in time")), 20_000);
+        const done = (err: unknown, data: unknown) => {
             clearTimeout(timer);
-            if (err || typeof data !== 'string') return resolve(no(`Screenshot failed: ${String(err ?? 'no data')}`));
+            if (err || typeof data !== 'string') reject(new Error(String(err || 'no data')));
+            else resolve(data);
+        };
+        if (capturing()) cfx().fivecapture.screenshot(src, { encoding: 'jpg', quality: 0.85 }, (err: unknown, r: any) => done(err, r?.data));
+        else cfx()['screenshot-basic'].requestClientScreenshot(src, { encoding: 'jpg', quality: 0.85 }, done);
+    });
+}
 
-            const file = new AttachmentBuilder(Buffer.from(data.split(',')[1] ?? '', 'base64'), { name: `screenshot-${t.src}.jpg` });
-            audit(by, 'Took a screenshot of', describe(t));
-            resolve(ok(`Screenshot of ${describe(t)}.`, [file]));
+export async function screenshot(by: User, t: OnlineTarget): Promise<Result> {
+    if (!capturing() && GetResourceState('screenshot-basic') !== 'started') {
+        return no('Screenshots need `fivecapture` or `screenshot-basic` running on the server.');
+    }
+    try {
+        const data = await grab(t.src);
+        const file = new AttachmentBuilder(Buffer.from(data.split(',')[1] ?? '', 'base64'), { name: `screenshot-${t.src}.jpg` });
+        audit(by, 'Took a screenshot of', describe(t));
+        return ok(`Screenshot of ${describe(t)}.`, [file]);
+    } catch (err) {
+        return no(`Screenshot of ${t.name} failed: ${(err as Error).message}`);
+    }
+}
+
+// Discord takes files up to 10 MB from bots.
+const discordMax = 10 * 1024 * 1024;
+
+export function record(by: User, t: OnlineTarget, seconds: number): Promise<Result> {
+    if (!capturing()) return Promise.resolve(no('Video clips need `fivecapture` running on the server.'));
+    return new Promise((resolve) => {
+        const timer = setTimeout(() => resolve(no(`${t.name} didn't send the clip back in time.`)), (seconds + 40) * 1000);
+        cfx().fivecapture.record(t.src, seconds, { save: true }, (err: unknown, r: any) => {
+            clearTimeout(timer);
+            if (err || !r?.file) return resolve(no(`Recording ${t.name} failed: ${String(err || 'no file')}`));
+            audit(by, `Recorded ${seconds}s of`, describe(t));
+            if (r.size > discordMax) return resolve(ok(`${seconds}s of ${describe(t)}. Too big for Discord, saved on the server as \`${r.file}\`.`));
+            const file = new AttachmentBuilder(readFileSync(r.file), { name: `clip-${t.src}.webm` });
+            resolve(ok(`${seconds}s of ${describe(t)}.`, [file]));
         });
     });
 }

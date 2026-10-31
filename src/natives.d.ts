@@ -36,6 +36,7 @@ declare function IsPlayerAceAllowed(src: Src, ace: string): boolean;
 declare function GetNumResources(): number;
 declare function GetResourceByFindIndex(index: number): string;
 declare function GetResourceState(name: string): string;
+declare function GetResourcePath(name: string): string;
 declare function GetResourceMetadata(name: string, key: string, index: number): string;
 declare function StartResource(name: string): boolean;
 declare function StopResource(name: string): boolean;

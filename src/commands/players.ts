@@ -223,6 +223,7 @@ export async function profile(t: Target, tier: number) {
                     button(`act:freeze:${r}`, isFrozen(t.src) ? 'Unfreeze' : 'Freeze', ButtonStyle.Primary),
                     button(`act:kick:${r}`, 'Kick', ButtonStyle.Danger),
                     button(`act:ban:${r}`, 'Ban', ButtonStyle.Danger),
+                    button(`act:record:${r}`, 'Record 10s'),
                 ),
             );
         } else if (t.license) {

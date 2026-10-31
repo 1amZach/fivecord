@@ -2,6 +2,8 @@
 // The Discord ones use the same names as discordbridge, so scripts written for
 // it keep working.
 
+import { readFileSync, statSync } from 'node:fs';
+import { relative, resolve } from 'node:path';
 import { AttachmentBuilder } from 'discord.js';
 import * as bans from './bans';
 import { banMessage } from './connect';
@@ -14,6 +16,20 @@ import { announce } from './restarts';
 import * as sessions from './sessions';
 import { colors, embed } from './ui';
 import { now } from './util';
+
+// Only videos fivecapture saved, and only what Discord will take.
+function clipFile(path: unknown): Buffer | null {
+    if (typeof path !== 'string' || !path.endsWith('.webm') || GetResourceState('fivecapture') !== 'started') return null;
+    const full = resolve(path);
+    const rel = relative(resolve(GetResourcePath('fivecapture'), 'captures'), full);
+    if (!rel || rel.startsWith('..')) return null;
+    try {
+        if (statSync(full).size > 10 * 1024 * 1024) return null;
+        return readFileSync(full);
+    } catch {
+        return null;
+    }
+}
 
 const discordId = (src: unknown) => sessions.bySrc(Number(src))?.discord ?? discordOf(identifiers(Number(src)));
 
@@ -38,15 +54,21 @@ const api: Record<string, (...args: any[]) => unknown> = {
     },
     isStaff: (src) => tierOfDiscord(discordId(src)) >= 0,
 
-    // `image` is an optional data URI, like the one screenshot-basic gives back.
-    log(kind: string, title: string, description?: string, color?: number, image?: string) {
+    // `image` is an optional data URI, like a screenshot. `clip` is the path of
+    // a video fivecapture saved, attached so it plays in Discord.
+    log(kind: string, title: string, description?: string, color?: number, image?: string, clip?: string) {
         const e = embed(color ?? colors.brand).setTitle(String(title).slice(0, 256));
         if (description) e.setDescription(String(description).slice(0, 4000));
 
+        const files: AttachmentBuilder[] = [];
         const data = typeof image === 'string' ? image.split(',')[1] : undefined;
-        if (!data) return void log(kind, e);
-        e.setImage('attachment://screenshot.jpg');
-        void log(kind, e, { files: [new AttachmentBuilder(Buffer.from(data, 'base64'), { name: 'screenshot.jpg' })] });
+        if (data) {
+            e.setImage('attachment://screenshot.jpg');
+            files.push(new AttachmentBuilder(Buffer.from(data, 'base64'), { name: 'screenshot.jpg' }));
+        }
+        const video = clipFile(clip);
+        if (video) files.push(new AttachmentBuilder(video, { name: 'clip.webm' }));
+        void log(kind, e, files.length ? { files } : undefined);
     },
 
     async send(channel: string, content: string) {
