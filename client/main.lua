@@ -1,5 +1,6 @@
-local function chat(color, author, text)
-    TriggerEvent('chat:addMessage', { color = color, multiline = true, args = { author, text } })
+-- channel puts it in a tab on chats that have them, like fivechat
+local function chat(color, author, text, channel)
+    TriggerEvent('chat:addMessage', { color = color, multiline = true, args = { author, text }, channel = channel })
 end
 
 local function bigMessage(title, text, duration)
@@ -40,7 +41,7 @@ RegisterNetEvent('fivecord:notify', function(data)
 end)
 
 RegisterNetEvent('fivecord:staffChat', function(author, text)
-    chat({ 43, 217, 204 }, ('[Staff] %s'):format(author), text)
+    chat({ 43, 217, 204 }, ('[Staff] %s'):format(author), text, 'staff')
 end)
 
 RegisterNetEvent('fivecord:reportReply', function(author, text)
