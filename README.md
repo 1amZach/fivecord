@@ -195,6 +195,10 @@ npm test
 
 The code is TypeScript in `src`, bundled with esbuild into one file.
 
+## Addons
+
+- [joinqueue](https://github.com/1amZach/joinqueue): a connection queue for full servers, with Discord role priority and crash grace. fivecord works the same with or without it.
+
 ## Support
 
 Made by **IamZach**. Questions, bugs or ideas: [discord.gg/agn](https://discord.gg/agn)
