@@ -179,6 +179,17 @@ AddEventHandler('fivecord:rolesChanged', function(source, added, removed) end)
 AddEventHandler('fivecord:playerBanned', function(source, license, ban) end)
 ```
 
+### API for other resources
+
+Server-side resources can ask fivecord to do anything the slash commands do, on behalf of a staff member. It checks their staff level against the same permissions, and logs it under their name. This is what fivepanel uses.
+
+```js
+emit('fivecord:api', id, 'act', ['kick', '@12', 'AFK'], { id: discordId, name: 'Zach' });
+on('fivecord:api:done', (id, ok, result) => {});
+```
+
+Actions: `access`, `players`, `search`, `profile`, `act` (message, warn, kick, freeze, revive, heal, kill, teleport, bring, screenshot, ban, note), `unban`, `removeEntry`, `bans`, `reports`, `report`, `status` and `server`. See `src/api.ts`.
+
 ## Frameworks
 
 `server/bridge.lua` is where fivecord talks to Qbox, QBCore and ESX. Revive and heal are hooks in `config.lua`, so if you use a different medical resource you only change those two functions. Items go through ox_inventory when it's running.
@@ -199,6 +210,8 @@ The code is TypeScript in `src`, bundled with esbuild into one file.
 
 - [joinqueue](https://github.com/1amZach/joinqueue): a connection queue for full servers, with Discord role priority and crash grace.
 - [warden](https://github.com/1amZach/warden): an anticheat. When it's running, its bans go through fivecord and show up in `/bans` and `/lookup`, its detections go to the `anticheat` log channel with a screenshot, and `/teleport` won't set it off.
+
+- [fivepanel](https://github.com/1amZach/fivepanel): a web admin panel. It uses fivecord's staff levels, and everything staff do in it goes through fivecord and shows up in your logs.
 
 fivecord works the same with or without them.
 

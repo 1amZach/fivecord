@@ -23,6 +23,7 @@ export interface Report {
     thread: string;
     opened: number;
     claimedBy?: string;
+    messages: { from: string; staff: boolean; text: string; at: number }[];
 }
 
 let next = 1;
@@ -33,6 +34,11 @@ const lastOpened = new Map<string, number>();
 export const forThread = (id: string) => byThread.get(id);
 export const forPlayer = (src: number) => bySrc.get(src);
 export const openCount = () => bySrc.size;
+export const list = () => [...bySrc.values()].sort((a, b) => a.id - b.id);
+export const byId = (id: number) => [...bySrc.values()].find((r) => r.id === id);
+
+const remember = (r: Report, from: string, staff: boolean, text: string) =>
+    r.messages.push({ from, staff, text: clip(text, 1000), at: now() });
 
 function buttons(r: Report, closed = false) {
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -72,6 +78,7 @@ function card(r: Report, text: string) {
 export async function open(src: number, text: string): Promise<string> {
     const existing = bySrc.get(src);
     if (existing) {
+        remember(existing, existing.name, false, text);
         const thread = await findThread(existing);
         await thread?.send({ embeds: [embed(colors.amber).setAuthor({ name: existing.name }).setDescription(clip(text, 3000))] });
         return 'Added to your open report.';
@@ -85,7 +92,8 @@ export async function open(src: number, text: string): Promise<string> {
     const channel = config.channels.reports && (await client.channels.fetch(config.channels.reports).catch(() => null));
     if (!channel) return 'Reports are not set up on this server.';
 
-    const r: Report = { id: next++, src, name: s?.name ?? GetPlayerName(src), license: s?.license, thread: '', opened: now() };
+    const r: Report = { id: next++, src, name: s?.name ?? GetPlayerName(src), license: s?.license, thread: '', opened: now(), messages: [] };
+    remember(r, r.name, false, text);
     const title = clip(`#${r.id} · ${r.name} · ${text}`, 90);
     const ping = config.alertRole ? `<@&${config.alertRole}>` : undefined;
     const message = { content: ping, embeds: [card(r, text)], components: [buttons(r)], allowedMentions: { roles: ping ? [config.alertRole] : [] } };
@@ -151,6 +159,7 @@ export async function relay(message: Message) {
     }
 
     const author = message.member?.displayName ?? message.author.username;
+    remember(r, author, true, message.content);
     emitNet('fivecord:reportReply', r.src, author, clip(message.content, 500));
     await message.react('✅').catch(() => {});
 }
@@ -161,6 +170,22 @@ export async function playerLeft(src: number) {
     const thread = await findThread(r);
     await thread?.send({ embeds: [embed(colors.grey).setDescription(`**${r.name}** left the server.`)] }).catch(() => {});
     await close(r, 'fivecord', 'The player left the server.');
+}
+
+// From somewhere other than the thread, like the web panel.
+export async function reply(r: Report, by: string, text: string) {
+    remember(r, by, true, text);
+    if (isOnline(r.src)) emitNet('fivecord:reportReply', r.src, by, clip(text, 500));
+    const thread = await findThread(r);
+    await thread?.send({ embeds: [embed(colors.teal).setAuthor({ name: by }).setDescription(clip(text, 3000))] }).catch(() => {});
+}
+
+export async function claim(r: Report, by: string) {
+    r.claimedBy = by;
+    await setButtons(r, false);
+    const thread = await findThread(r);
+    await thread?.send({ embeds: [embed(colors.teal).setDescription(`**${by}** is handling this report.`)] }).catch(() => {});
+    if (isOnline(r.src)) emitNet('fivecord:reportReply', r.src, by, 'is looking at your report.');
 }
 
 export async function button(i: ButtonInteraction, action: string, id: number) {

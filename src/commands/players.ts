@@ -88,7 +88,7 @@ handlers.push({
 
 // ------------------------------------------------------------------- profile
 
-async function vehicles(char: bridge.Character, fw: bridge.Framework): Promise<string[] | undefined> {
+export async function vehicles(char: bridge.Character, fw: bridge.Framework): Promise<string[] | undefined> {
     if (db().kind !== 'mysql') return undefined;
     const sql =
         fw === 'esx'

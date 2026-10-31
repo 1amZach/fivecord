@@ -7,6 +7,7 @@ import { normalize, setConfig, config } from './config';
 import './connect';
 import { openStore } from './db';
 import { client, guild } from './discord';
+import { registerApi } from './api';
 import { registerExports } from './exports';
 import { online, resource } from './fivem';
 import * as game from './game';
@@ -91,6 +92,7 @@ async function boot() {
     const store = await openStore();
     await loadBans();
     registerExports();
+    registerApi();
 
     // after a restart of this resource, pick up whoever is already playing
     for (const p of online()) sessions.start(p.src);
