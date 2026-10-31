@@ -10,7 +10,7 @@ import { lock } from '../src/connect';
 import { openStore } from '../src/db';
 import * as sessions from '../src/sessions';
 
-const staff = { id: '555555555555555555', name: 'Zach' };
+const staff = { id: '555555555555555555', name: 'Zach (panel)' };
 const open = Object.fromEntries(
     ['players', 'lookup', 'message', 'warn', 'kick', 'freeze', 'teleport', 'ban', 'unban', 'bans', 'note', 'warnings', 'server', 'announce'].map((k) => [k, 'everyone']),
 );

@@ -7,7 +7,7 @@ name 'fivecord'
 author 'IamZach'
 discord 'https://discord.gg/agn'
 description 'Run your FiveM server from Discord'
-version '1.1.0'
+version '1.2.0'
 repository 'https://github.com/1amZach/fivecord'
 
 server_scripts {

@@ -13,6 +13,7 @@ import { online, resource } from './fivem';
 import * as game from './game';
 import { flushChat } from './logs';
 import { startPresence } from './presence';
+import * as news from './news';
 import * as reports from './reports';
 import { startClock } from './restarts';
 import * as sessions from './sessions';
@@ -55,6 +56,7 @@ client.once(Events.ClientReady, async (c) => {
 
     await deploy(g).catch((err) => console.error('fivecord: could not register slash commands:', err.message));
     startPresence();
+    void news.loadNews();
 
     // members cache is filled now, give online players their roles
     for (const s of sessions.sessions.values()) aces.sync(s.src, [...(g.members.cache.get(s.discord ?? '')?.roles.cache.keys() ?? [])]);
@@ -67,6 +69,7 @@ client.on(Events.InteractionCreate, (i) => void handle(i));
 client.on(Events.MessageCreate, (m) => {
     void game.staffMessage(m);
     void reports.relay(m);
+    news.onMessage(m);
 });
 
 client.on(Events.GuildMemberUpdate, (before, after) => {

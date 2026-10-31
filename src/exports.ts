@@ -9,6 +9,7 @@ import { db } from './db';
 import { member, roles, sendable, tierName, tierOfDiscord } from './discord';
 import { cfx, discordOf, identifiers, pick, tokens } from './fivem';
 import { log } from './logs';
+import { getNews } from './news';
 import { announce } from './restarts';
 import * as sessions from './sessions';
 import { colors, embed } from './ui';
@@ -54,6 +55,7 @@ const api: Record<string, (...args: any[]) => unknown> = {
     },
 
     announce: (title: string, text: string) => announce(String(title), String(text)),
+    getNews: () => getNews() ?? null,
 
     // for anticheats: exports.fivecord:ban(source, 'Noclip', 0, 'Anticheat'), seconds 0 = permanent
     ban(src: number, reason: string, seconds = 0, by = GetInvokingResource() ?? 'server') {

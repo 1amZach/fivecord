@@ -35,6 +35,7 @@ Config.permissions = {
 Config.channels = {
     staffChat = '',     -- two-way chat with staff in game
     reports = '',       -- a text or forum channel; each /report gets its own thread
+    news = '',          -- the latest post here shows on fiveload's loading screen
 }
 
 -- Log channels. Anything without its own channel goes to `default`.

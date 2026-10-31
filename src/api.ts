@@ -32,9 +32,10 @@ export interface Staff {
 
 class Refused extends Error {}
 
-// the actions log and audit through a Discord user, so make one
+// the actions log and audit through a Discord user, so make one. The caller
+// names where it came from, like "Zach (panel)".
 const asUser = (s: Staff) =>
-    ({ id: s.id, username: `${s.name} (panel)`, globalName: `${s.name} (panel)`, displayAvatarURL: () => s.avatar || undefined }) as unknown as User;
+    ({ id: s.id, username: s.name, globalName: s.name, displayAvatarURL: () => s.avatar || undefined }) as unknown as User;
 
 // "kick" or "server lock", the same keys Config.permissions uses
 function keys() {
@@ -299,7 +300,7 @@ const handlers: Record<string, (staff: Staff, ...args: any[]) => Promise<unknown
     },
 };
 
-const staffLabel = (s: Staff) => `${s.name} (panel)`;
+const staffLabel = (s: Staff) => s.name;
 
 export async function run(action: string, args: unknown[], staff: Staff) {
     const fn = handlers[action];

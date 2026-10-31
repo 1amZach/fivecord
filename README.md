@@ -163,6 +163,7 @@ fivecord:isStaff(source)
 fivecord:log('bans', 'Title', 'Description', 0xE5484D)  -- to a log channel, optionally with an image data URI last
 fivecord:send('channel id', 'plain message')
 fivecord:announce('Title', 'Shown to everyone in game')
+fivecord:getNews()                       -- latest post in Config.channels.news: { author, text, at }
 
 -- for anticheats: seconds 0 = permanent, the last argument is who banned them
 fivecord:ban(source, 'Noclip', 0, 'Anticheat')
@@ -211,6 +212,8 @@ The code is TypeScript in `src`, bundled with esbuild into one file.
 - [joinqueue](https://github.com/1amZach/joinqueue): a connection queue for full servers, with Discord role priority and crash grace.
 - [warden](https://github.com/1amZach/warden): an anticheat. When it's running, its bans go through fivecord and show up in `/bans` and `/lookup`, its detections go to the `anticheat` log channel with a screenshot, and `/teleport` won't set it off.
 
+- [fiveadmin](https://github.com/1amZach/fiveadmin): an in-game admin menu. Staff get the same levels as on Discord, and its warnings, kicks and bans go through fivecord.
+- [fiveload](https://github.com/1amZach/fiveload): a loading screen. It shows how many staff are online and the latest post from `Config.channels.news`.
 - [fivepanel](https://github.com/1amZach/fivepanel): a web admin panel. It uses fivecord's staff levels, and everything staff do in it goes through fivecord and shows up in your logs.
 
 fivecord works the same with or without them.

@@ -9,7 +9,7 @@ export interface Config {
     appeal: string;
     tiers: Tier[];
     permissions: Record<string, string>;
-    channels: { staffChat: string; reports: string };
+    channels: { staffChat: string; reports: string; news: string };
     logs: Record<string, string>;
     alertRole: string;
     allowlist: { enabled: boolean; roles: string[] };
@@ -53,7 +53,7 @@ export function normalize(raw: any = {}): Config {
         appeal: str(raw.appeal),
         tiers: tiers.length ? tiers : [{ name: 'support', roles: [] }, { name: 'mod', roles: [] }, { name: 'admin', roles: [] }, { name: 'owner', roles: [] }],
         permissions: record(raw.permissions, (v) => (typeof v === 'string' ? v.toLowerCase() : undefined)),
-        channels: { staffChat: snowflake(raw.channels?.staffChat), reports: snowflake(raw.channels?.reports) },
+        channels: { staffChat: snowflake(raw.channels?.staffChat), reports: snowflake(raw.channels?.reports), news: snowflake(raw.channels?.news) },
         logs: record(raw.logs, (v) => snowflake(v) || undefined),
         alertRole: snowflake(raw.alertRole),
         allowlist: { enabled: raw.allowlist?.enabled === true, roles: ids(raw.allowlist?.roles) },
